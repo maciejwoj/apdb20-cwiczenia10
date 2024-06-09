@@ -1,23 +1,35 @@
-using cwiczenia10.Context;
 using Microsoft.AspNetCore.Mvc;
-
-namespace cwiczenia10.Controllers;
+using cwiczenia10.Dtos;
+using cwiczenia10.Services;
 
 [Route("api/[controller]")]
 [ApiController]
 public class PrescriptionController : ControllerBase
 {
-    private readonly ApdbContext _dbContext;
+    private readonly IDbService _dbService;
     
-    public PrescriptionController(ApdbContext dbContext)
+    public PrescriptionController(IDbService dbService)
     {
-        _dbContext = dbContext;
+        _dbService = dbService;
     }
 
-    [HttpGet]
-    public IActionResult GetPrescription()
+    [HttpPost]
+    public async Task<IActionResult> AddNewPrescription(NewPrescritionDTO newPrescription)
     {
-        
-        return Ok();
+        if (newPrescription.PrescriptionMedicamentDTOs.Count < 10 && (newPrescription.DueDate >= newPrescription.Date))
+        {
+            try
+            {
+                await _dbService.AddNewPrescription(newPrescription);
+                return Created("api/prescriptions", newPrescription);
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return BadRequest(e.Message);
+            }
+        }
+        return BadRequest("Invalid data");
     }
 }

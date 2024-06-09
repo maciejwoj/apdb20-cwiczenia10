@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using cwiczenia10.Context;
+using cwiczenia10.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,8 +11,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers().AddJsonOptions(x =>
     x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+builder.Services.AddScoped<IDbService, DbService>();
+
+// Configure the DbContext
 builder.Services.AddDbContext<ApdbContext>(options =>
-    options.UseSqlServer("Name=ConnectionStrings:Default"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 
 var app = builder.Build();
 
@@ -22,5 +26,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.MapControllers();
 
 app.Run();
